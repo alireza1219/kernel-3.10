@@ -71,6 +71,66 @@ struct ipc_proc_iface {
 	int (*show)(struct seq_file *, void *);
 };
 
+/* allow others to piggyback on ipc_namespace */
+static DEFINE_MUTEX(peripc_mutex);
+static struct peripc_operations *peripc_ops;
+
+/*
+ * peripc_operations is a simplified pernet_operations:
+ * - allow only one entity to register
+ * - allow to register only at boot time (no modules)
+ * (these assumptions make the code much simpler)
+ */
+
+static int init_peripc_count;
+
+/* caller hold peripc_mutex */
+int init_peripc_ns(struct ipc_namespace *ns)
+{
+	int ret = 0;
+
+	if (peripc_ops && peripc_ops->init)
+		ret = peripc_ops->init(ns);
+	if (ret == 0)
+		init_peripc_count++;
+	return ret;
+}
+
+/* caller hold peripc_mutex */
+void exit_peripc_ns(struct ipc_namespace *ns)
+{
+	if (peripc_ops && peripc_ops->exit)
+		peripc_ops->exit(ns);
+	init_peripc_count--;
+}
+
+int register_peripc_ops(struct peripc_operations *ops)
+{
+	int ret = -EBUSY;
+
+	mutex_lock(&peripc_mutex);
+	/* must be first register, and only init ipc_namespace exists */
+	if (peripc_ops == NULL && init_peripc_count == 0) {
+		peripc_ops = ops;
+		ret = init_peripc_ns(&init_ipc_ns);
+		if (ret < 0)
+			peripc_ops = NULL;
+	}
+	mutex_unlock(&peripc_mutex);
+	return ret;
+}
+
+void unregister_peripc_ops(struct peripc_operations *ops)
+{
+	mutex_lock(&peripc_mutex);
+	/* sanity:  be same as registered, and no other ipc ns (beyond init) */
+	BUG_ON(peripc_ops != ops);
+	BUG_ON(init_peripc_count != 1);
+	if (ops->exit)
+		exit_peripc_ns(&init_ipc_ns);
+	peripc_ops = NULL;
+	mutex_unlock(&peripc_mutex);
+}
 static void ipc_memory_notifier(struct work_struct *work)
 {
 	ipcns_notify(IPCNS_MEMCHANGED);

@@ -47,6 +47,9 @@ static inline void msg_exit_ns(struct ipc_namespace *ns) { }
 static inline void shm_exit_ns(struct ipc_namespace *ns) { }
 #endif
 
+int init_peripc_ns(struct ipc_namespace *ns);
+void exit_peripc_ns(struct ipc_namespace *ns);
+
 struct ipc_rcu {
 	struct rcu_head rcu;
 	atomic_t refcount;
