@@ -1250,22 +1250,12 @@ static int _request_firmware(struct fw_desc *desc)
 			goto out;
 		}
 	}
-
-        ret = fw_get_filesystem_firmware(desc->device, fw->priv,
-					 desc->dest_addr, desc->dest_size);
-	if (ret) {
-		if (!(desc->opt_flags & FW_OPT_NO_WARN))
-			dev_dbg(desc->device,
-				 "Direct firmware load for %s failed with error %d\n",
-				 desc->name, ret);
-		if (desc->opt_flags & FW_OPT_USERHELPER) {
-			dev_dbg(desc->device, "Falling back to user helper\n");
-			ret = fw_load_from_user_helper(fw, desc, timeout);
-		}
-	}
-
+	
+	if (!fw_get_filesystem_firmware(desc->device, fw->priv,
+					desc->dest_addr, desc->dest_size))
+		ret = fw_load_from_user_helper(fw, desc, timeout);
 	if (!ret)
-                ret = assign_firmware_buf(fw, desc->device, desc->opt_flags);
+		ret = assign_firmware_buf(fw, desc->device, desc->nocache);
 	
 	usermodehelper_read_unlock();
 
