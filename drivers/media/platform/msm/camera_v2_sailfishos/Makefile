@@ -1,0 +1,19 @@
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/sensor
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/codecs
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/isps
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/pproc
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/msm_vb2
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/camera
+ccflags-y += -Idrivers/media/platform/msm/camera_v2_sailfishos/jpeg_10
+
+obj-$(CONFIG_MSMB_CAMERA) += msm.o
+obj-$(CONFIG_MSMB_CAMERA) += camera/
+obj-$(CONFIG_MSMB_CAMERA) += msm_vb2/
+obj-$(CONFIG_MSMB_CAMERA) += sensor/
+obj-$(CONFIG_MSMB_CAMERA) += isp/
+obj-$(CONFIG_MSMB_CAMERA) += ispif/
+obj-$(CONFIG_MSMB_JPEG) += jpeg_10/
+obj-$(CONFIG_MSMB_CAMERA) += msm_buf_mgr/
+obj-$(CONFIG_MSMB_CAMERA) += pproc/
+obj-$(CONFIG_MSMB_CAMERA) += gemini/
